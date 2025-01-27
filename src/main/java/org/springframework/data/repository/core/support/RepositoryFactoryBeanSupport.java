@@ -18,6 +18,7 @@ package org.springframework.data.repository.core.support;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -45,6 +46,7 @@ import org.springframework.data.repository.query.QueryMethodValueEvaluationConte
 import org.springframework.data.spel.EvaluationContextProvider;
 import org.springframework.data.util.Lazy;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -85,6 +87,7 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 	private boolean lazyInit = false;
 	private Optional<EvaluationContextProvider> evaluationContextProvider = Optional.empty();
 	private final List<RepositoryFactoryCustomizer> repositoryFactoryCustomizers = new ArrayList<>();
+	private @Nullable Function<BeanFactory, Object> aotImplementationFunction;
 
 	private Lazy<T> repository;
 
@@ -240,6 +243,15 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 		this.publisher = publisher;
 	}
 
+	public void setAotImplementationFunction(@Nullable Function<BeanFactory, Object> aotImplementationFunction) {
+		this.aotImplementationFunction = aotImplementationFunction;
+	}
+
+	@Nullable
+	protected Function<BeanFactory, Object> getAotImplementationFunction() {
+		return aotImplementationFunction;
+	}
+
 	@Override
 	@SuppressWarnings("unchecked")
 	public EntityInformation<S, ID> getEntityInformation() {
@@ -297,6 +309,10 @@ public abstract class RepositoryFactoryBeanSupport<T extends Repository<S, ID>, 
 
 		if (this.environment != null) {
 			this.factory.setEnvironment(this.environment);
+		}
+
+		if(this.aotImplementationFunction != null) {
+			this.factory.setAotImplementation(aotImplementationFunction.apply(beanFactory));
 		}
 
 		repositoryBaseClass.ifPresent(this.factory::setRepositoryBaseClass);

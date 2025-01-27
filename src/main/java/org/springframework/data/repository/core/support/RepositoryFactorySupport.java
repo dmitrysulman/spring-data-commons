@@ -121,6 +121,7 @@ public abstract class RepositoryFactorySupport
 	private BeanFactory beanFactory;
 	private Environment environment;
 	private Lazy<ProjectionFactory> projectionFactory;
+	private @Nullable Object aotImplementation;
 
 	private final QueryCollectingQueryCreationListener collectingListener = new QueryCollectingQueryCreationListener();
 
@@ -265,6 +266,10 @@ public abstract class RepositoryFactorySupport
 
 		Assert.notNull(processor, "RepositoryProxyPostProcessor must not be null");
 		this.postProcessors.add(processor);
+	}
+
+	public void setAotImplementation(@Nullable Object aotImplementation) {
+		this.aotImplementation = aotImplementation;
 	}
 
 	/**
@@ -494,6 +499,10 @@ public abstract class RepositoryFactorySupport
 
 		RepositoryComposition composition = getRepositoryComposition(metadata);
 		RepositoryFragments repositoryAspects = getRepositoryFragments(metadata);
+
+		if(aotImplementation != null) {
+			repositoryAspects = RepositoryFragments.just(aotImplementation).append(repositoryAspects);
+		}
 
 		return composition.append(fragments).append(repositoryAspects);
 	}
