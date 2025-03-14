@@ -300,7 +300,7 @@ class RepositoryFactorySupportUnitTests {
 
 		var repository1 = factory.getRepository(ObjectAndQuerydslRepository.class, backingRepo);
 		var repository2 = factory.getRepository(ObjectAndQuerydslRepository.class, backingRepo);
-		repository1.findByFoo();
+		repository1.findByFoo(null);
 		repository2.deleteAll();
 
 		for (int i = 0; i < 10; i++) {
